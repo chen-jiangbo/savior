@@ -118,20 +118,6 @@ public class RecordTemplate extends BaseTemplate {
     }
 
     /**
-     * 插入记录
-     *
-     * @param tableName
-     * @param record
-     * @return
-     */
-    public int insertSelective(String tableName, Record record) {
-        if (record == null || record.getData() == null) {
-            throw new NullDataException("要插入的数据为空!");
-        }
-        return getNamedParameterJdbcTemplate().update(createInsertSql(tableName, record, false), record.getData());
-    }
-
-    /**
      * 通过表名批量插入
      *
      * @param tableName
@@ -253,7 +239,7 @@ public class RecordTemplate extends BaseTemplate {
         if (key == null) {
             throw new ServiceException("删除数据时,主键值不能为空.");
         }
-        StringBuffer sql = new StringBuffer(" delete from ").append(tableName).append(" where ").append(primaryKey).append("=:").append(getDaoAdapter().getSeparator()).append(primaryKey).append(getDaoAdapter().getSeparator()).append("=?");
+        StringBuffer sql = new StringBuffer(" delete from ").append(tableName).append(" where ").append(getDaoAdapter().getSeparator()).append(primaryKey).append(getDaoAdapter().getSeparator()).append("=?");
         return getNamedParameterJdbcTemplate().getJdbcTemplate().update(sql.toString(), key);
     }
 

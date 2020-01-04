@@ -33,4 +33,13 @@ public class TbSaviorCustomModel {
     public void setmCreateTime(Date mCreateTime) {
         this.mCreateTime = mCreateTime;
     }
+
+    @Override
+    public String toString() {
+        return "TbSaviorCustomModel{" +
+                "mId=" + mId +
+                ", mName='" + mName + '\'' +
+                ", mCreateTime=" + mCreateTime +
+                '}';
+    }
 }

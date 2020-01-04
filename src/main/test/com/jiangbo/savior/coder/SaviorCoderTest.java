@@ -1,5 +1,6 @@
-package com.jiangbo.savior;
+package com.jiangbo.savior.coder;
 
+import com.jiangbo.savior.BaseSaviorTest;
 import com.jiangbo.savior.coder.config.CoderConfig;
 import org.junit.Test;
 

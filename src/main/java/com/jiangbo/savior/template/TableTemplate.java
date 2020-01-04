@@ -264,7 +264,7 @@ public class TableTemplate extends BaseTemplate {
      */
     public <T extends BaseTable> int insert(String tableName, T tableModle) {
         assertNull(tableModle);
-        return this.recordTemplate.insertSelective(tableName, tableModle.reversal());
+        return this.recordTemplate.insert(tableName, tableModle.reversal());
     }
 
     /**

@@ -84,7 +84,7 @@ public class Condition{
 
     public void setValue(Object value) {
         if (this.Opertion != null && this.Opertion.equals(Opt.Like)) {
-            this.value = "%" + value + "%";
+            this.value = value;
         } else {
             this.value = value;
         }

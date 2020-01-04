@@ -131,7 +131,7 @@ public class ModelTemplate extends BaseTemplate {
      */
     public <T> int insert(String tableName, IModelUpdateCallBack<T> updateCallBack, T model) {
         assertNull(model);
-        return this.recordTemplate.insertSelective(tableName, updateCallBack.buildRecord(new Record(),model));
+        return this.recordTemplate.insert(tableName, updateCallBack.buildRecord(model));
     }
 
     /**
@@ -143,7 +143,7 @@ public class ModelTemplate extends BaseTemplate {
      */
     public <T> long insertReturnGeneratedKey(String tableName, IModelUpdateCallBack<T> updateCallBack,T model) {
         assertNull(model);
-        return this.recordTemplate.insertReturnGeneratedKey(tableName, updateCallBack.buildRecord(new Record(),model));
+        return this.recordTemplate.insertReturnGeneratedKey(tableName, updateCallBack.buildRecord(model));
     }
 
     /**
@@ -156,7 +156,7 @@ public class ModelTemplate extends BaseTemplate {
         assertNull(models);
         List<Record> temp = new ArrayList<>(models.size());
         for (T t : models) {
-            temp.add(updateCallBack.buildRecord(new Record(),t));
+            temp.add(updateCallBack.buildRecord(t));
         }
         Map<String, Object>[] params = new LinkedCaseInsensitiveMap[temp.size()];
         for (int i = 0; i < temp.size(); i++) {
@@ -176,7 +176,7 @@ public class ModelTemplate extends BaseTemplate {
      */
     public <T> int update(String tableName, T model,IModelUpdateCallBack<T> updateCallBack, String primaryKey) {
         assertNull(model);
-        return this.recordTemplate.update(tableName, updateCallBack.buildRecord(new Record(),model), primaryKey);
+        return this.recordTemplate.update(tableName, updateCallBack.buildRecord(model), primaryKey);
     }
 
     /**
@@ -189,7 +189,7 @@ public class ModelTemplate extends BaseTemplate {
      */
     public <T> int update(String tableName, T model,IModelUpdateCallBack<T> updateCallBack, String[] keys) {
         assertNull(model);
-        return this.recordTemplate.update(tableName, updateCallBack.buildRecord(new Record(),model), keys);
+        return this.recordTemplate.update(tableName, updateCallBack.buildRecord(model), keys);
     }
 
     /**
@@ -202,7 +202,7 @@ public class ModelTemplate extends BaseTemplate {
      */
     public <T> int save(String tableName, T model,IModelUpdateCallBack<T> updateCallBack,  String primaryKey) {
         assertNull(model);
-        return this.recordTemplate.save(tableName, updateCallBack.buildRecord(new Record(),model),primaryKey);
+        return this.recordTemplate.save(tableName, updateCallBack.buildRecord(model),primaryKey);
     }
 
     /**
@@ -215,7 +215,7 @@ public class ModelTemplate extends BaseTemplate {
      */
     public <T> int updateSelective(String tableName, T model,IModelUpdateCallBack<T> updateCallBack, String primaryKey) {
         assertNull(model);
-        return this.recordTemplate.updateSelective(tableName,updateCallBack.buildRecord(new Record(),model), primaryKey);
+        return this.recordTemplate.updateSelective(tableName,updateCallBack.buildRecord(model), primaryKey);
 
     }
 
@@ -229,7 +229,7 @@ public class ModelTemplate extends BaseTemplate {
      */
     public <T> int updateSelective(String tableName, T model,IModelUpdateCallBack<T> updateCallBack, String[] keys) {
         assertNull(model);
-        return this.recordTemplate.updateSelective(tableName,updateCallBack.buildRecord(new Record(),model), keys);
+        return this.recordTemplate.updateSelective(tableName,updateCallBack.buildRecord(model), keys);
     }
 
     /**
@@ -244,7 +244,7 @@ public class ModelTemplate extends BaseTemplate {
         assertNull(models);
         List<Record> temp = new ArrayList<>(models.size());
         for (T t : models) {
-            temp.add(updateCallBack.buildRecord(new Record(),t));
+            temp.add(updateCallBack.buildRecord(t));
         }
         return this.recordTemplate.batchUpdate(tableName, temp, primaryKey);
     }

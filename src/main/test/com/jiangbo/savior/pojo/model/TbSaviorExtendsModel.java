@@ -15,4 +15,11 @@ public class TbSaviorExtendsModel extends TbSaviorTable {
     public void seteStr(String eStr) {
         this.eStr = eStr;
     }
+
+    @Override
+    public String toString() {
+        return "TbSaviorExtendsModel{" +
+                "eStr='" + eStr + '\'' +
+                '}';
+    }
 }

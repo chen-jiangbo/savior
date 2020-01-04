@@ -51,4 +51,12 @@ public class TbSaviorTable extends BaseTable{
         this.createTime=createTime;
     }
 
+    @Override
+    public String toString() {
+        return "TbSaviorTable{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", createTime=" + createTime +
+                '}';
+    }
 }

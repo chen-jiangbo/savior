@@ -4,5 +4,5 @@ import com.jiangbo.savior.model.Record;
 
 public interface IModelUpdateCallBack <T> {
 
-    public Record buildRecord(Record record, T model);
+    public Record buildRecord(T model);
 }
