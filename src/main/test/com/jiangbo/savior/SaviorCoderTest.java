@@ -41,9 +41,9 @@ public class SaviorCoderTest extends BaseSaviorTest {
     public void testGenerateCustomString(){
         CoderConfig coderConfig=new CoderConfig();
         //设置是否生成swagger文档(默认true)
-        coderConfig.setGenSwaggerAnnotation(true);
+        coderConfig.setGenSwaggerAnnotation(false);
         //设置是否支持Lombok(默认true)
-        coderConfig.setSupportLombok(true);
+        coderConfig.setSupportLombok(false);
         System.out.println(dao.coder.generator("com.jiangbo.savior.model",new String[]{"tb_savior"},coderConfig));
     }
 }

@@ -21,8 +21,8 @@ public class TableTemplate implements Template {
                 (coderConfig.isGenSwaggerAnnotation()?
                 "import io.swagger.annotations.ApiModel;\n" +
                 "import io.swagger.annotations.ApiModelProperty;\n":"") +
-                "import com.leyou.acgn.base.repository.model.Record;\n" +
-                "import com.leyou.acgn.base.repository.model.BaseTable;\n" +
+                "import com.jiangbo.savior.model.Record;\n" +
+                "import com.jiangbo.savior.model.BaseTable;\n" +
                 (coderConfig.isSupportLombok()?"import lombok.Data;\n"+
                 "import lombok.EqualsAndHashCode;\n":"")+
                 "\n" +

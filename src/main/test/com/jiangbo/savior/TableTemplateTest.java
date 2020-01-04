@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * 基础类型数据操作测试类
  */
-public class LangTemplateTest extends BaseSaviorTest {
+public class TableTemplateTest extends BaseSaviorTest {
 
     /**
      * 创建表
@@ -19,7 +19,7 @@ public class LangTemplateTest extends BaseSaviorTest {
                 "  `name` VARCHAR(50) COMMENT '名称',\n" +
                 "  `create_time` DATETIME COMMENT '创建时间',\n" +
                 "  PRIMARY KEY (`id`)\n" +
-                ") COMMENT='savior框架测试表' ");
+                ")");
     }
     /**
      * 插入表
@@ -36,8 +36,6 @@ public class LangTemplateTest extends BaseSaviorTest {
     public void testDeleteData(){
         dao.langTemplate.delete("tb_savior","name","张三");
     }
-
-
 
 
 }
