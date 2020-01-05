@@ -1,8 +1,16 @@
-# savior使用手册
+# **savior使用手册**
 
 ## savior框架介绍
 
-   作者是一个现实中很实在的一个JAVA服务端码农,在平时的开发项目中我发现我们有很多的代码是在操作数据库，目前可供我们选择的就只有mybatis和hibernate两个主流框架.由于hibernate的笨重,现在很少有项目使用.所以大多数的公司都使用mybatis框架.我不得不承认这些都是很优秀的框架.我个人是个比较懒的人，能一行代码搞定的就不想多些一行。由于这样的洁癖促使我萌生了一个想法,能不能让我们的数据库操作在任何地方想用就用,而且只需要调用一行代码就能搞定一次数据操作.就这样我开始了我的这个想法........
+随时随地savior只需要用一行代码操作数据库,做我们想做的操作，查询我们想要的结果....
+
+### 1.savior框架由来
+
+   作者是一个现实中很实在的一个JAVA服务端码农,在平时的开发项目中我发现我们有很多的代码是在操作数据库，目前可供我们选择的就只有mybatis和hibernate两个主流框架.由于hibernate的笨重,现在很少有项目使用.所以大多数的公司都使用mybatis框架.我不得不承认这些都是很优秀的框架.我个人是个比较懒的人，能一行代码搞定的就不想多些一行。mybatis 要写接口还要到xml中配置映射，我感觉着实有点麻烦.由于这样的洁癖促使我萌生了一个想法,能不能让我们的数据库操作在任何地方想用就用,而且只需要调用一行代码就能搞定一次数据操作.就这样我经过了两个月左右的不停改版,和我在公司项目的实战应用,一步步优化savior框架就此诞生了,我希望就像框架名一样,savior框架能成为我们JAVA开发人员的救世主，能把我们从以前操作数据库的困苦中解救出来.....
+
+### 2.savior框架性能
+
+   在框架中我尽量的避免了反射,大多数的对应创建和属性值的设置都是直接调用实体的方法来设置的,在我现网的项目中做过几次数据量比较大的接口测试，性能是略优于mybatis框架的.由于我工作的公司不是很大没有专业的性能测试人员，如果伙伴们使用后有整体测试过，麻烦告知我一下.
 
 ## savior基础入门
 
@@ -12,6 +20,10 @@
 
 ```java
 DataSource dataSource=initDataSource(); //初始化dataSource
+/**
+ *dataSource 数据库存连接池
+ *DbTypeEnum 这个是数据库类型(暂时框架支持mysql,oracle)
+ */
 SaviorDao dao = new SaviorDao(dataSource, DbTypeEnum.MYSQL);
 ```
 
@@ -120,6 +132,8 @@ public class BaseSaviorTest {
 ### 1.代码生成器介绍
 
 ​     代码生成器是框架原生自带，可以生成生成文件，也可以生成byte数组.方便我们在开发的时候，集成到接口文档中生成代码，也可以直接在test中生成,而且,我们的代码生成器还支持配置是否生成swagger注解，是否要生成Lombokod类型的实体.
+
+ **注:要把mysql的注释生成到实体中，我们必须在连接数据库的url后面增加useInformationSchema=true这个参数**
 
 ### 2.代码生成器演示
 
@@ -596,5 +610,189 @@ public class TableTemplateTest extends BaseSaviorTest {
 
 ​       SqlBuilder是框架内封装的一个sql拼接工具类，主要应对列表查询中查询条件不固定的一些比较复杂的SQL,SqlBuilder把我们平常的sql主要分成三段,第一段就是select阶段，第二段就是where条件段,剩下的就是第三段，大部份的SQL都可以通过这三个阶段拼接后都能生成完整的SQL,如果确实很复杂的SQL我们只能使用字符串拼接了.....
 
+### 1.SqlBuilder初体验
 
+```java
+public class SqlBuilderTest extends BaseSaviorTest {
+
+    /**
+     * 通过sqlBuilder查询分页
+     */
+    @Test
+    public void testQueryModelPageBySqlBuilder(){
+        SqlBuilder sqlBuilder=SqlBuilder.getSelect("select * from tb_savior");
+        sqlBuilder.and(Condition.eq("id",5l));
+        sqlBuilder.and(Condition.like("name","%七%"));
+        Page<TbSaviorExtendsModel> pageModel = dao.modelTemplate.queryPage((Record record) -> {
+            TbSaviorExtendsModel rs = new TbSaviorExtendsModel();
+            rs.convert(record);
+            rs.seteStr("...........");
+            return rs;
+        }, sqlBuilder, 1, 10);
+        System.out.println("size==>"+pageModel.getTotalCount());
+        System.out.println("name==>"+((List<TbSaviorExtendsModel>)pageModel.getList()).get(0).getName());
+    }
+
+    /**
+     * 通过sqlBuilder查询分页
+     */
+    @Test
+    public void testQueryTablePageBySqlBuilder(){
+        SqlBuilder sqlBuilder=SqlBuilder.getSelect("select * from tb_savior");
+        sqlBuilder.and(Condition.eq("id",5l));
+        sqlBuilder.and(Condition.like("name","%七%"));
+        Page<TbSaviorTable> pageModel = dao.tableTemplate.queryPage(TbSaviorTable::new, sqlBuilder, 1, 10);
+        System.out.println("size==>"+pageModel.getTotalCount());
+        System.out.println("name==>"+((List<TbSaviorExtendsModel>)pageModel.getList()).get(0).getName());
+    }
+}
+```
+
+### 2.SqlBuilder介绍
+
+#### 2-1.SqlBuilder第一段构造器
+
+  SqlBuilder只有一个单例的构造方法,我们可以通过静态方法getSelect()来创建SqlBuilder.在这里面如果是很复杂的查询这个里面的语句是在最后一个where单词前的都放到这个方法的参数里面.(注:最后的where关键字不用写，框架会根据第二阶段是否有条件存在自动加上where关键字)例:
+
+```java
+SqlBuilder sqlBuilder=SqlBuilder.getSelect("select * from tb_savior a inner join tb_savior2 b on (a.id=b.pid)");
+```
+
+#### 2-2.SqlBuilder第二段条件组装
+
+   在这个阶段主要是做where关键字后面的条件组装，提供了比较全的条件封装类，在组装时每个条件分成两级，第一级是条件连接词(or/and),第二级条件类型(in/like .....)
+
+```java
+    @Test
+    public void testSqlBuilderContition(){
+        SqlBuilder sqlBuilder=SqlBuilder.getSelect("select * from tb_savior");
+        //等于条件
+        sqlBuilder.and(Condition.eq("id",5l));
+        //不等于
+        sqlBuilder.and(Condition.uEq("id",5l));
+        //小于
+        sqlBuilder.and(Condition.lt("id",5l));
+        //大于
+        sqlBuilder.and(Condition.gt("id",5l));
+        //包含
+        sqlBuilder.and(Condition.in("id", Arrays.asList(5l,6l)));
+        //不包含
+        sqlBuilder.and(Condition.uIn("id", Arrays.asList(5l,6l)));
+        //模糊查询
+        sqlBuilder.and(Condition.like("name","%张%"));
+        //直接拼接条件值
+        sqlBuilder.and(Condition.appendSql("id=4"));
+        //多条件要用括号包裹起来优先执行
+        //or (id=5 and id=6)
+        sqlBuilder.orListAnd(Arrays.asList(Condition.eq("id",5l),Condition.eq("id",6l)));
+        //and (id=5 or id=6)
+        sqlBuilder.andListOr(Arrays.asList(Condition.eq("id",5l),Condition.eq("id",6l)));
+        dao.recordTemplate.queryList(sqlBuilder);
+    }
+```
+
+#### 2-3.SqlBuilder第三段排序分组
+
+​    在这段中我们主要对SQL三个关键字的(group by / having / order by)进行了封装,分页没有放到这里面,是因为我们的API中封装好了分布查询，框架会根据不同的数据库变换成不同的分页语句(现只支持java程序员主流的oracel/mysql数据库,后面会增加其它的数据库)
+
+```java
+    @Test
+    public void testSqlBuilder(){
+        SqlBuilder sqlBuilder=SqlBuilder.getSelect("select name,count(1) as num from tb_savior");
+        //增加group
+        sqlBuilder.addGroupBy(GroupBy.by("name"));
+        //增加order by
+        sqlBuilder.addOrderBy(OrderBy.asc("name"));
+        dao.recordTemplate.queryPage(sqlBuilder,1,10);
+    }
+```
+
+## savior框架跨数据库支持
+
+​      savior框架设计初期就是支持一套代码多数据库部署的,我在解决跨数据库的思路主要是分为两种情况来进行处理,一种情况是两种数据库SQL几乎都一样，只是其中的一两个函数不一样，这样我们就封装了DaoAdapter的工具类,这个类中包含了一些我们经常使用到的各数据库不同函数的适配(作者没有适配全,如果伙伴们后期在使用中遇到很适用的函数可以发邮件(863313313@qq.com)告诉作者适配到框架中),第二种情况就是我们直接在代码中写多套数据库对应的sql,到时框架根据不同的数据库存执行不同的SQL,下面我对这两种情况分别作介绍.
+
+### 1.函数式适配
+
+DaoAdapter类中我们适配了几个常用了sql函数,玉要如下 
+
+| 方法                                                | 解释             |
+| --------------------------------------------------- | ---------------- |
+| public String concat(String... params);             | 字符连接         |
+| public String ifNull(String col, String val);       | 参数中ifnull判断 |
+| public String subStr(String col, int beg, int end); | 截断字符         |
+| public String formateDate(String col);              | 格式化日期       |
+| public String formatDateTime(String col);           | 格式化时间       |
+| public String parseDate(String str);                | String转日期类型 |
+
+下面举例说明一下:
+
+```java
+@Test
+    public void testFunDaoAdapter(){
+        System.out.println(dao.langTemplate.query(String.class,"select "+dao.adapter.concat("name","id") +"from tb_savior where id=1"));
+    }
+```
+
+### 2.库类型适配
+
+  根据数据库类型适配这个主要是调用compatible这个方法,这个方法会根据初始化SaviorDao这个框架里传入的数据库类型调用方法中不同的方法，而达到数据库适配的目的，例:
+
+```java
+/**
+     * 根据数据库类型适配
+     */
+    @Test
+    public void testDbTypeDaoAdapter(){
+        dao.compatible(new ICompatibleCallBack<TbSaviorTable>() {
+            //mysql会执行下面的方法
+            @Override
+            public TbSaviorTable executeMysql() {
+                return dao.tableTemplate.query(TbSaviorTable::new,"select * from tb_savior limit 1");
+            }
+            //oracle会执行下面的方法
+            @Override
+            public TbSaviorTable executeOracel() {
+                return dao.tableTemplate.query(TbSaviorTable::new,"SELECT * FROM  (SELECT T.* FROM (  select * from tb_savior  ) T   WHERE ROWNUM <= 10 )WHERE ROWNUM >= 1");
+            }
+        });
+    }
+```
+
+## savior框架兼容mybatis模式
+
+​     如果我们用了savior框架,我的宗旨是随处想用就用，在我的项目开发中我很多接口就是直接在controller中调用SaviorDao直接查询返回数据,就没有了service层和dao层这样会少了很多调用的代码,不是很大项的项目我比较建议这样做，这样代码少，开发周期短.缺点就是没有做结构分层我们到时数据表改了结果后，我们只能全局搜索对应的表名，再对其进行相应的修改.到此我针对比较怀念mybatis的,框架也提供了BaseMapper抽像类，继承他后一些基础的单表操作框架已经实现了
+
+自定义mapper类
+
+```java
+ public class TbSaviorMapper extends BaseMapper<TbSaviorTable,Long>{
+
+       @Override
+       protected MapperTableInfo<TbSaviorTable> mapperTableInfo() {
+           return new MapperTableInfo<>("tb_savior",TbSaviorTable::new,"id");
+       }
+       //由于测试时没有使用spring,所以加了这个构造函数，项目中用了spring不用的
+       public TbSaviorMapper(SaviorDao dao){
+           super(dao);
+       }
+       public TbSaviorExtendsModel queryModel(){
+           return dao.modelTemplate.query((record) -> {
+               TbSaviorExtendsModel rs = new TbSaviorExtendsModel();
+               rs.convert(record);
+               rs.seteStr("......");
+               return rs;
+           }, "select * from tb_savior where id = 3 limit 1");
+       }
+   }
+```
+
+测试方法
+
+```java
+   @Test
+    public void testQueryTable(){
+       TbSaviorMapper tbSaviorMapper=new TbSaviorMapper(this.dao);
+       System.out.println(tbSaviorMapper.queryTable(1l).getName());
+   }
+```
 

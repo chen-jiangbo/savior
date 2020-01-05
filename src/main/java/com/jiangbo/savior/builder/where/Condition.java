@@ -38,11 +38,11 @@ public class Condition{
         return new Condition(Opt.UnEqual, propertyName, value);
     }
 
-    public static Condition greatThan(String propertyName, Object value) {
+    public static Condition gt(String propertyName, Object value) {
         return new Condition(Opt.GreatThan, propertyName, value);
     }
 
-    public static Condition lessThan(String propertyName, Object value) {
+    public static Condition lt(String propertyName, Object value) {
         return new Condition(Opt.LessThan, propertyName, value);
     }
 
@@ -54,7 +54,7 @@ public class Condition{
         return new Condition(Opt.In, propertyName, value);
     }
 
-    public static Condition notIn(String propertyName, Object value){
+    public static Condition uIn(String propertyName, Object value){
         return new Condition(Opt.notIn, propertyName, value);
     }
 

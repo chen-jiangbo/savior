@@ -15,56 +15,64 @@ import java.util.function.Supplier;
 public abstract class BaseMapper<T extends BaseTable, ID> {
 
     @Autowired(required = false)
-    private SaviorDao dao;
+    protected SaviorDao dao;
+
+    private MapperTableInfo<T> mapperTableInfo;
+
+    public BaseMapper() {
+        this.mapperTableInfo=mapperTableInfo();
+    }
+
+    public BaseMapper(SaviorDao dao) {
+        this.dao=dao;
+        this.mapperTableInfo=mapperTableInfo();
+    }
 
     private final String BASE_QUERY_SQL = "select * from ";
 
-    protected abstract String tableName();
+    protected abstract MapperTableInfo<T> mapperTableInfo();
 
-    protected abstract Supplier<T> getTable();
-
-    protected abstract String primaryKey();
 
     public T queryTable(ID id) {
-        return dao.tableTemplate.queryByPrimaryKey(getTable(), tableName(), primaryKey(), id);
+        return dao.tableTemplate.queryByPrimaryKey(mapperTableInfo.getSupplier(),mapperTableInfo.getTableName(), mapperTableInfo.getPrimaryKey(), id);
     }
 
     public List<T> queryTable(Iterable<ID> id) {
-        SqlBuilder sqb = SqlBuilder.getSelect(BASE_QUERY_SQL + tableName());
-        sqb.and(Condition.in(primaryKey(), id));
-        return dao.tableTemplate.queryList(getTable(), sqb);
+        SqlBuilder sqb = SqlBuilder.getSelect(BASE_QUERY_SQL + mapperTableInfo.getTableName());
+        sqb.and(Condition.in(mapperTableInfo.getPrimaryKey(), id));
+        return dao.tableTemplate.queryList(mapperTableInfo.getSupplier(), sqb);
     }
 
     public List<T> queryAll() {
-        return dao.tableTemplate.queryList(getTable(), BASE_QUERY_SQL + tableName());
+        return dao.tableTemplate.queryList(mapperTableInfo.getSupplier(), BASE_QUERY_SQL + mapperTableInfo.getTableName());
     }
 
     public List<T> queryAll(final OrderBy[] orders) {
         AssertUtils.isNull(orders, "排序字段不能为空!");
-        SqlBuilder sqb = SqlBuilder.getSelect(BASE_QUERY_SQL + tableName());
+        SqlBuilder sqb = SqlBuilder.getSelect(BASE_QUERY_SQL + mapperTableInfo.getTableName());
         for (OrderBy order : orders) {
             sqb.addOrderBy(order);
         }
-        return dao.tableTemplate.queryList(getTable(), sqb);
+        return dao.tableTemplate.queryList(mapperTableInfo.getSupplier(), sqb);
     }
 
     public Page<T> queryPage(int pageBeg, int size){
-        return dao.tableTemplate.queryPage(getTable(),BASE_QUERY_SQL+getTable(),pageBeg,size);
+        return dao.tableTemplate.queryPage(mapperTableInfo.getSupplier(),BASE_QUERY_SQL+mapperTableInfo.getTableName(),pageBeg,size);
     }
 
     public <S extends T> int saveTable(S table){
-        return dao.tableTemplate.save(tableName(),table,primaryKey());
+        return dao.tableTemplate.save(mapperTableInfo.getTableName(),table,mapperTableInfo.getPrimaryKey());
     }
 
     public <S extends T> int insertTable(S table){
-        return dao.tableTemplate.insert(tableName(),table);
+        return dao.tableTemplate.insert(mapperTableInfo.getTableName(),table);
     }
 
     public <S extends T> int updateTable(S table){
-        return dao.tableTemplate.update(tableName(),table,primaryKey());
+        return dao.tableTemplate.update(mapperTableInfo.getTableName(),table,mapperTableInfo.getPrimaryKey());
     }
 
     public <S extends T> int updateSelectiveTable(S table,String primaryKey){
-        return dao.tableTemplate.updateSelective(tableName(),table,primaryKey);
+        return dao.tableTemplate.updateSelective(mapperTableInfo.getTableName(),table,primaryKey);
     }
 }
