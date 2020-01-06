@@ -95,9 +95,9 @@ public class BaseSaviorTest {
         try {
             this.dataSource = new DruidDataSource();
             this.dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-            this.dataSource.setUrl("jdbc:mysql://193.112.2.226:9086/savior?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&generateSimpleParameterMetadata=true&useInformationSchema=true");
-            this.dataSource.setUsername("anzun");
-            this.dataSource.setPassword("anzun");
+            this.dataSource.setUrl("jdbc:mysql://IP:端口/数据库名?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&generateSimpleParameterMetadata=true&useInformationSchema=true");
+            this.dataSource.setUsername("用户名");
+            this.dataSource.setPassword("密码");
             this.dataSource.setInitialSize(1);
             this.dataSource.setMinIdle(1);
             this.dataSource.setMaxActive(1);
