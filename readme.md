@@ -14,9 +14,21 @@
 
 ## savior基础入门
 
-### 1.创建dao操作类
+### 1.savior依赖导入
 
-#### 1-1.java原生创建
+   可以直接在中央仓库中下载
+
+```xml
+   <dependency>
+       <groupId>com.github.chen-jiangbo</groupId>
+       <artifactId>savior</artifactId>
+       <version>1.0.0</version>
+   </dependency>
+```
+
+### 2.创建dao操作类
+
+#### 2-1.java原生创建
 
 ```java
 DataSource dataSource=initDataSource(); //初始化dataSource
@@ -27,7 +39,7 @@ DataSource dataSource=initDataSource(); //初始化dataSource
 SaviorDao dao = new SaviorDao(dataSource, DbTypeEnum.MYSQL);
 ```
 
-#### 1-2.spring-jdbc项目创建
+#### 2-2.spring-jdbc项目创建
 
 ```java
 @Autowired
@@ -35,7 +47,7 @@ private NamedParameterJdbcTemplate namedParameterJdbcTemplate;//注入jdbcTempla
 SaviorDao dao = SaviorDao(namedParameterJdbcTemplate, DbTypeEnum dbTypeEnum)
 ```
 
-### 2.helloword走起
+### 3.helloword走起
 
 ```java
 /**
@@ -72,7 +84,7 @@ SaviorDao dao = SaviorDao(namedParameterJdbcTemplate, DbTypeEnum dbTypeEnum)
     }
 ```
 
-### 3.基础总结
+### 4.基础总结
 
 ​    看了这个简单的demo后，你肯定会想，就这么简单用jdbc不就跟你的一样了，我还用你做什么,就听我下一说.
 
