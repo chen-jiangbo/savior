@@ -1,6 +1,6 @@
 package com.jiangbo.savior.callback;
 
-public interface FCallBack {
+public interface Procedure {
 
     public void execute() throws Throwable;
 }

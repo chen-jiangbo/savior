@@ -4,12 +4,12 @@ import com.jiangbo.savior.adapter.DaoAdapter;
 import com.jiangbo.savior.adapter.enums.DbTypeEnum;
 import com.jiangbo.savior.exception.ServiceException;
 import com.jiangbo.savior.template.RecordTemplate;
-import com.jiangbo.savior.callback.FCallBack;
+import com.jiangbo.savior.callback.Procedure;
 import com.jiangbo.savior.coder.Coder;
 import com.jiangbo.savior.template.BaseTemplate;
 import com.jiangbo.savior.template.ModelTemplate;
 import com.jiangbo.savior.template.TableTemplate;
-import com.jiangbo.savior.callback.ICompatibleCallBack;
+import com.jiangbo.savior.callback.ICompatibleFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -78,7 +78,7 @@ public class SaviorDao {
      * @param <T>
      * @return
      */
-    public <T> T compatible(ICompatibleCallBack<T> compatibleCallBack) {
+    public <T> T compatible(ICompatibleFunction<T> compatibleCallBack) {
         switch (dbTypeEnum) {
             case ORACLE:
                 return compatibleCallBack.executeOracel();
@@ -104,7 +104,7 @@ public class SaviorDao {
         });
     }
 
-    public void tx(FCallBack callBack) {
+    public void tx(Procedure callBack) {
         transactionTemplate.execute((transactionStatus) -> {
             try {
                 callBack.execute();
