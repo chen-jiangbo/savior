@@ -9,7 +9,6 @@ import com.jiangbo.savior.coder.Coder;
 import com.jiangbo.savior.template.BaseTemplate;
 import com.jiangbo.savior.template.ModelTemplate;
 import com.jiangbo.savior.template.TableTemplate;
-import com.jiangbo.savior.callback.ICallBack;
 import com.jiangbo.savior.callback.ICompatibleCallBack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +17,7 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
+import java.util.function.Supplier;
 
 public class SaviorDao {
     protected Logger logger = LoggerFactory.getLogger(getClass());
@@ -90,14 +90,13 @@ public class SaviorDao {
 
     /**
      * 数据库事务方法
-     * @param callBack
      * @param <T>
      * @return
      */
-    public <T> T tx(ICallBack<T> callBack) {
+    public <T> T tx(Supplier<T> supplier) {
         return transactionTemplate.execute((transactionStatus) -> {
             try {
-                return callBack.execute();
+                return supplier.get();
             } catch (Throwable e) {
                 logger.error("数据库执行异常:", e);
                 throw new ServiceException(e.getMessage());

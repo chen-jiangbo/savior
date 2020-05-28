@@ -3,14 +3,11 @@ package com.jiangbo.savior.template;
 import com.jiangbo.savior.adapter.DaoAdapter;
 import com.jiangbo.savior.adapter.enums.DbTypeEnum;
 import com.jiangbo.savior.builder.SqlBuilder;
-import com.jiangbo.savior.callback.IEmptyResult;
 import com.jiangbo.savior.exception.InavlidLangTypeException;
 import com.jiangbo.savior.exception.NullDataException;
 import com.jiangbo.savior.model.Record;
 import com.jiangbo.savior.utils.ObjectUtils;
 import com.jiangbo.savior.utils.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -18,10 +15,9 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public abstract class Template {
-    protected Logger logger = LoggerFactory.getLogger(getClass());
-
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private DbTypeEnum dbTypeEnum;
 
@@ -69,9 +65,9 @@ public abstract class Template {
         }
     }
 
-    protected <T> T executeQuery(IEmptyResult<T> result) {
+    protected <T> T executeQuery(Supplier<T> result) {
         try {
-            return result.execute();
+            return result.get();
         } catch (EmptyResultDataAccessException e) {
             return null;
         }

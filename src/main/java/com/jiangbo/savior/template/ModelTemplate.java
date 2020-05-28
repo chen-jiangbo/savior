@@ -1,8 +1,6 @@
 package com.jiangbo.savior.template;
 
 import com.jiangbo.savior.builder.SqlBuilder;
-import com.jiangbo.savior.callback.IModelQueryCallback;
-import com.jiangbo.savior.callback.IModelUpdateCallBack;
 import com.jiangbo.savior.model.Page;
 import com.jiangbo.savior.model.Record;
 import org.springframework.util.LinkedCaseInsensitiveMap;
@@ -10,6 +8,7 @@ import org.springframework.util.LinkedCaseInsensitiveMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class ModelTemplate extends Template {
 
@@ -29,12 +28,12 @@ public class ModelTemplate extends Template {
      * @param value
      * @return
      */
-    public <T> T queryPrimaryKey(IModelQueryCallback<T> callback, String tableName, String primaryKey, Object value) {
+    public <T> T queryPrimaryKey(Function<Record,T> callback, String tableName, String primaryKey, Object value) {
         Record record = this.recordTemplate.queryByPrimaryKey(tableName, primaryKey, value);
         if (record == null) {
             return null;
         }
-        return callback.buildModel(record);
+        return callback.apply(record);
     }
 
     /**
@@ -45,12 +44,12 @@ public class ModelTemplate extends Template {
      * @param <T>
      * @return
      */
-    public <T> T query(IModelQueryCallback<T> callback, String sql, Object... params) {
+    public <T> T query(Function<Record,T> callback, String sql, Object... params) {
         Record record = this.recordTemplate.query(sql, params);
         if (record == null) {
             return null;
         }
-        return callback.buildModel(record);
+        return callback.apply(record);
     }
 
 
@@ -62,17 +61,17 @@ public class ModelTemplate extends Template {
      * @param <T>
      * @return
      */
-    public <T> List<T> queryList(IModelQueryCallback<T> queryCallback, String sql, Object... params) {
-        return buildModelList(queryCallback,this.recordTemplate.queryList(sql, params));
+    public <T> List<T> queryList(Function<Record,T> function, String sql, Object... params) {
+        return buildModelList(function,this.recordTemplate.queryList(sql, params));
     }
 
-    private <T> List<T> buildModelList(IModelQueryCallback<T> queryCallback,List<Record> records){
+    private <T> List<T> buildModelList(Function<Record,T> function,List<Record> records){
         if (records == null || records.isEmpty()) {
             return null;
         }
         List<T> rs = new ArrayList<>(records.size());
         for (Record r : records) {
-            rs.add(queryCallback.buildModel(r));
+            rs.add(function.apply(r));
         }
         return rs;
     }
@@ -83,8 +82,8 @@ public class ModelTemplate extends Template {
      * @param <T>
      * @return
      */
-    public <T> List<T> queryList(IModelQueryCallback<T> queryCallback, SqlBuilder sqlBuilder) {
-        return buildModelList(queryCallback,this.recordTemplate.queryList(sqlBuilder));
+    public <T> List<T> queryList(Function<Record,T> function, SqlBuilder sqlBuilder) {
+        return buildModelList(function,this.recordTemplate.queryList(sqlBuilder));
     }
 
     /**
@@ -96,12 +95,12 @@ public class ModelTemplate extends Template {
      * @param <T>
      * @return
      */
-    public <T> Page<T> queryPage(IModelQueryCallback<T> queryCallback, SqlBuilder sqlBuilder, int pageBeg, int size) {
+    public <T> Page<T> queryPage(Function<Record,T> function, SqlBuilder sqlBuilder, int pageBeg, int size) {
         Long total = getTotal(sqlBuilder);
         if (total == null || total == 0) {
             return new Page<T>(null, 0l, size, pageBeg);
         }
-        return new Page<T>(buildModelList(queryCallback, recordTemplate.queryList(getDaoAdapter().getPageSql(sqlBuilder.getSql(getDaoAdapter()), pageBeg, size), sqlBuilder)), total, size, pageBeg);
+        return new Page<T>(buildModelList(function, recordTemplate.queryList(getDaoAdapter().getPageSql(sqlBuilder.getSql(getDaoAdapter()), pageBeg, size), sqlBuilder)), total, size, pageBeg);
     }
 
     /**
@@ -114,12 +113,12 @@ public class ModelTemplate extends Template {
      * @param <T>
      * @return
      */
-    public <T> Page<T> queryPage(IModelQueryCallback<T> queryCallback, String sql, int pageBeg, int size, Object... params) {
+    public <T> Page<T> queryPage(Function<Record,T> function, String sql, int pageBeg, int size, Object... params) {
         Long total = getTotal(sql,params);
         if (total == null || total == 0) {
             return new Page<T>(null, 0l, size, pageBeg);
         }
-        return new Page<T>(queryList(queryCallback, getDaoAdapter().getPageSql(sql, pageBeg, size), params), total, size, pageBeg);
+        return new Page<T>(queryList(function, getDaoAdapter().getPageSql(sql, pageBeg, size), params), total, size, pageBeg);
     }
 
 
@@ -129,9 +128,9 @@ public class ModelTemplate extends Template {
      * @param tableName
      * @return
      */
-    public <T> int insert(String tableName, IModelUpdateCallBack<T> updateCallBack, T model) {
+    public <T> int insert(String tableName, Function<T,Record> function, T model) {
         assertNull(model);
-        return this.recordTemplate.insertSelective(tableName, updateCallBack.buildRecord(model));
+        return this.recordTemplate.insertSelective(tableName, function.apply(model));
     }
 
     /**
@@ -141,9 +140,9 @@ public class ModelTemplate extends Template {
      * @param model
      * @return
      */
-    public <T> long insertReturnGeneratedKey(String tableName, IModelUpdateCallBack<T> updateCallBack,T model) {
+    public <T> long insertReturnGeneratedKey(String tableName, Function<T,Record> function,T model) {
         assertNull(model);
-        return this.recordTemplate.insertReturnGeneratedKey(tableName, updateCallBack.buildRecord(model));
+        return this.recordTemplate.insertReturnGeneratedKey(tableName, function.apply(model));
     }
 
     /**
@@ -152,11 +151,11 @@ public class ModelTemplate extends Template {
      * @param tableName
      * @return
      */
-    public <T> int[] batchInsertByTableName(String tableName, IModelUpdateCallBack<T> updateCallBack, List<T> models) {
+    public <T> int[] batchInsertByTableName(String tableName, Function<T,Record> function, List<T> models) {
         assertNull(models);
         List<Record> temp = new ArrayList<>(models.size());
         for (T t : models) {
-            temp.add(updateCallBack.buildRecord(t));
+            temp.add(function.apply(t));
         }
         Map<String, Object>[] params = new LinkedCaseInsensitiveMap[temp.size()];
         for (int i = 0; i < temp.size(); i++) {
@@ -174,9 +173,9 @@ public class ModelTemplate extends Template {
      * @param primaryKey 主键名
      * @return
      */
-    public <T> int update(String tableName, T model,IModelUpdateCallBack<T> updateCallBack, String primaryKey) {
+    public <T> int update(String tableName, T model,Function<T,Record> function, String primaryKey) {
         assertNull(model);
-        return this.recordTemplate.update(tableName, updateCallBack.buildRecord(model), primaryKey);
+        return this.recordTemplate.update(tableName, function.apply(model), primaryKey);
     }
 
     /**
@@ -187,9 +186,9 @@ public class ModelTemplate extends Template {
      * @param keys       主键名
      * @return
      */
-    public <T> int update(String tableName, T model,IModelUpdateCallBack<T> updateCallBack, String[] keys) {
+    public <T> int update(String tableName, T model,Function<T,Record> function, String[] keys) {
         assertNull(model);
-        return this.recordTemplate.update(tableName, updateCallBack.buildRecord(model), keys);
+        return this.recordTemplate.update(tableName, function.apply(model), keys);
     }
 
     /**
@@ -200,9 +199,9 @@ public class ModelTemplate extends Template {
      * @param primaryKey  主键名
      * @return
      */
-    public <T> int save(String tableName, T model,IModelUpdateCallBack<T> updateCallBack,  String primaryKey) {
+    public <T> int save(String tableName, T model,Function<T,Record> function,  String primaryKey) {
         assertNull(model);
-        return this.recordTemplate.save(tableName, updateCallBack.buildRecord(model),primaryKey);
+        return this.recordTemplate.save(tableName, function.apply(model),primaryKey);
     }
 
     /**
@@ -213,9 +212,9 @@ public class ModelTemplate extends Template {
      * @param primaryKey
      * @return
      */
-    public <T> int updateSelective(String tableName, T model,IModelUpdateCallBack<T> updateCallBack, String primaryKey) {
+    public <T> int updateSelective(String tableName, T model,Function<T,Record> function, String primaryKey) {
         assertNull(model);
-        return this.recordTemplate.updateSelective(tableName,updateCallBack.buildRecord(model), primaryKey);
+        return this.recordTemplate.updateSelective(tableName,function.apply(model), primaryKey);
 
     }
 
@@ -227,9 +226,9 @@ public class ModelTemplate extends Template {
      * @param keys
      * @return
      */
-    public <T> int updateSelective(String tableName, T model,IModelUpdateCallBack<T> updateCallBack, String[] keys) {
+    public <T> int updateSelective(String tableName, T model,Function<T,Record> function, String[] keys) {
         assertNull(model);
-        return this.recordTemplate.updateSelective(tableName,updateCallBack.buildRecord(model), keys);
+        return this.recordTemplate.updateSelective(tableName,function.apply(model), keys);
     }
 
     /**
@@ -240,11 +239,11 @@ public class ModelTemplate extends Template {
      * @param primaryKey
      * @return
      */
-    public <T> int[] batchUpdate(String tableName, List<T> models,IModelUpdateCallBack<T> updateCallBack, String primaryKey) {
+    public <T> int[] batchUpdate(String tableName, List<T> models,Function<T,Record> function, String primaryKey) {
         assertNull(models);
         List<Record> temp = new ArrayList<>(models.size());
         for (T t : models) {
-            temp.add(updateCallBack.buildRecord(t));
+            temp.add(function.apply(t));
         }
         return this.recordTemplate.batchUpdate(tableName, temp, primaryKey);
     }
