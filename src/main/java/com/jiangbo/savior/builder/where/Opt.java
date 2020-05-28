@@ -14,7 +14,11 @@ public enum Opt {
     // 范围查询
     In,
     // 范围查询
-    notIn,
+    NotIn,
+    // 不为空
+    IsNotNull,
+    //为空
+    IsNull,
     //动态拼接SQL
     appendSql;
 }

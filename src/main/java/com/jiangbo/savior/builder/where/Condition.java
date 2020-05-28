@@ -17,8 +17,8 @@ public class Condition{
 
     private Condition(Opt opertion, String name, Object value) {
         super();
-        Opertion = opertion;
-        this.name = name;
+        setOpertion(opertion);
+        setName(name);
         setValue(value);
     }
 
@@ -38,11 +38,11 @@ public class Condition{
         return new Condition(Opt.UnEqual, propertyName, value);
     }
 
-    public static Condition gt(String propertyName, Object value) {
+    public static Condition greatThan(String propertyName, Object value) {
         return new Condition(Opt.GreatThan, propertyName, value);
     }
 
-    public static Condition lt(String propertyName, Object value) {
+    public static Condition lessThan(String propertyName, Object value) {
         return new Condition(Opt.LessThan, propertyName, value);
     }
 
@@ -54,9 +54,19 @@ public class Condition{
         return new Condition(Opt.In, propertyName, value);
     }
 
-    public static Condition uIn(String propertyName, Object value){
-        return new Condition(Opt.notIn, propertyName, value);
+    public static Condition notIn(String propertyName, Object value){
+        return new Condition(Opt.NotIn, propertyName, value);
     }
+
+    public static Condition isNull(String propertyName){
+        return new Condition(Opt.IsNull, propertyName, null);
+    }
+
+    public static Condition isNotNull(String propertyName){
+        return new Condition(Opt.IsNotNull, propertyName, null);
+    }
+
+
 
     public static Condition appendSql(String sql){
         return new Condition(Opt.appendSql, null, sql);
@@ -83,11 +93,7 @@ public class Condition{
     }
 
     public void setValue(Object value) {
-        if (this.Opertion != null && this.Opertion.equals(Opt.Like)) {
-            this.value = value;
-        } else {
-            this.value = value;
-        }
+        this.value = value;
     }
 
     public String getAlias() {
@@ -97,8 +103,12 @@ public class Condition{
     public void setAlias(String name, DaoAdapter daoAdapter) {
         name=(name==null?"":name.replace(".","_").replace(daoAdapter.getSeparator(),""))+ StringUtils.uuid();
         setAttr(name);
-        if (this.Opertion != null && (this.Opertion.equals(Opt.In)||this.Opertion.equals(Opt.notIn))) {
+        if (this.Opertion != null && (this.Opertion.equals(Opt.In)||this.Opertion.equals(Opt.NotIn))) {
             this.alias = "(:" + name + ") ";
+        } else if(this.Opertion.equals(Opt.IsNull)){
+            this.alias = " is null ";
+        } else if(this.Opertion.equals(Opt.IsNotNull)){
+            this.alias = " is not null ";
         } else {
             this.alias = ":" + name;
         }
