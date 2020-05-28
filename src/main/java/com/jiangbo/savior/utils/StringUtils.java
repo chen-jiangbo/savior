@@ -106,20 +106,6 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
-    /**
-     * 生成编号工具类
-     *
-     * @param code (1:订单,2-出库单)
-     * @return
-     */
-    public static String buildCode(Integer code) {
-        return new StringBuffer("BDD").append(code == 1 ? "IN" : "OUT").append((int) (new Random().nextDouble() * (9000) + 1000)).append(System.currentTimeMillis()).toString();
-    }
-
-    public static String buildPaydollarRef(){
-        return new StringBuffer("PAYDOLLAR-").append((int) (new Random().nextDouble() * (9000) + 1000)).append(System.currentTimeMillis()).toString();
-    }
-
 
     /**
      * map转str

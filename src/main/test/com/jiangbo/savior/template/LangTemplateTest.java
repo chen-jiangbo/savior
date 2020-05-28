@@ -16,7 +16,7 @@ public class LangTemplateTest extends BaseSaviorTest {
      */
     @Test
     public void testCreateTable() {
-        dao.langTemplate.execute("CREATE TABLE `tb_savior`(  \n" +
+        dao.baseTemplate.execute("CREATE TABLE `tb_savior`(  \n" +
                 "  `id` BIGINT(10) NOT NULL AUTO_INCREMENT COMMENT '主键',\n" +
                 "  `name` VARCHAR(50) COMMENT '名称',\n" +
                 "  `create_time` DATETIME COMMENT '创建时间',\n" +
@@ -29,7 +29,7 @@ public class LangTemplateTest extends BaseSaviorTest {
      */
     @Test
     public void testInsertData() {
-        dao.langTemplate.insert("INSERT INTO tb_savior (id,name,create_time) VALUES (1,?,?)", "张三", new Date());
+        dao.baseTemplate.insert("INSERT INTO tb_savior (id,name,create_time) VALUES (1,?,?)", "张三", new Date());
     }
 
     /**
@@ -37,7 +37,7 @@ public class LangTemplateTest extends BaseSaviorTest {
      */
     @Test
     public void testDeleteData() {
-        dao.langTemplate.delete("tb_savior", "name", "张三");
+        dao.baseTemplate.delete("tb_savior", "name", "张三");
     }
 
 
@@ -46,7 +46,7 @@ public class LangTemplateTest extends BaseSaviorTest {
      */
     @Test
     public void testQueryData() {
-        System.out.println(dao.langTemplate.query(String.class, "select name from tb_savior where id=1"));
+        System.out.println(dao.baseTemplate.query(String.class, "select name from tb_savior where id=1"));
     }
 
     /**
@@ -54,6 +54,6 @@ public class LangTemplateTest extends BaseSaviorTest {
      */
     @Test
     public void testQueryListData() {
-        System.out.println(Arrays.toString(dao.langTemplate.queryList(String.class, "select name from tb_savior").toArray()));
+        System.out.println(Arrays.toString(dao.baseTemplate.queryList(String.class, "select name from tb_savior").toArray()));
     }
 }

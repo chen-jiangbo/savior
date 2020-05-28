@@ -1,14 +1,18 @@
 package com.jiangbo.savior.builder;
 
+
+
 import com.jiangbo.savior.adapter.DaoAdapter;
 import com.jiangbo.savior.builder.group.GroupBuilder;
 import com.jiangbo.savior.builder.group.GroupBy;
+import com.jiangbo.savior.builder.having.Having;
 import com.jiangbo.savior.builder.having.HavingBuilder;
+import com.jiangbo.savior.builder.limit.Limit;
+import com.jiangbo.savior.builder.limit.LimitBuilder;
 import com.jiangbo.savior.builder.order.OrderBuilder;
 import com.jiangbo.savior.builder.order.OrderBy;
-import com.jiangbo.savior.builder.where.Logical;
-import com.jiangbo.savior.builder.having.Having;
 import com.jiangbo.savior.builder.where.Condition;
+import com.jiangbo.savior.builder.where.Logical;
 import com.jiangbo.savior.builder.where.WhereBuilder;
 
 import java.util.ArrayList;
@@ -18,15 +22,15 @@ import java.util.Map;
 /**
  * sql拼接的工具类
  */
-public class SqlBuilder{
+public class SqlBuilder {
     private StringBuffer sql;
     private List<OrderBy> orderBys=new ArrayList<>();
     private List<GroupBy> groupBys=new ArrayList<>();
     private Having having=null;
+    private Limit limit=null;
     private List<Logical> list = new ArrayList<Logical>();
+    private StringBuffer endSql=new StringBuffer();
 
-    private SqlBuilder() {
-    }
 
     private SqlBuilder(String sql) {
         this.sql = new StringBuffer(sql);
@@ -77,12 +81,12 @@ public class SqlBuilder{
     }
 
     public String getSql(DaoAdapter daoAdapter) {
-        return new StringBuffer(this.sql)
+        return LimitBuilder.addSubLimitSql(new StringBuffer(this.sql)
                 .append(WhereBuilder.generWhereSql(daoAdapter, this.list))
                 .append(GroupBuilder.getSubGroupBySql(groupBys))
                 .append(HavingBuilder.getSubOrderBySql(having))
                 .append(OrderBuilder.getSubOrderBySql(orderBys))
-                .toString();
+                .append(endSql), limit, daoAdapter);
     }
     /**
      * 增加分组
@@ -113,6 +117,35 @@ public class SqlBuilder{
         this.having=having;
         return this;
     }
+
+    /**
+     * 增加分页
+     * @return
+     */
+    public SqlBuilder addLimit(int offset,int size) {
+        this.limit=new Limit(offset,size);
+        return this;
+    }
+
+
+    /**
+     * 增加分页
+     * @return
+     */
+    public SqlBuilder addLimit(int size) {
+        this.limit=new Limit(size);
+        return this;
+    }
+
+    /**
+     * 增加Sql片段
+     * @return
+     */
+    public SqlBuilder addEndSql(String endSql) {
+        this.endSql.append(endSql);
+        return this;
+    }
+
 
 
     public Map<String, Object> getValues() {

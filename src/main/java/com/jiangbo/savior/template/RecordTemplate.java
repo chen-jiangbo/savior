@@ -1,10 +1,10 @@
 package com.jiangbo.savior.template;
 
+import com.jiangbo.savior.builder.SqlBuilder;
 import com.jiangbo.savior.exception.NullDataException;
 import com.jiangbo.savior.exception.ServiceException;
 import com.jiangbo.savior.model.Page;
 import com.jiangbo.savior.model.Record;
-import com.jiangbo.savior.builder.SqlBuilder;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -15,13 +15,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class RecordTemplate extends BaseTemplate {
+public class RecordTemplate extends Template {
 
-    private LangTemplate langTemplate;
+    private BaseTemplate baseTemplate;
 
-    public RecordTemplate(LangTemplate langTemplate){
-        super.init(langTemplate.getNamedParameterJdbcTemplate(),langTemplate.getDbTypeEnum());
-        this.langTemplate=langTemplate;
+    public RecordTemplate(BaseTemplate baseTemplate){
+        super.init(baseTemplate.getNamedParameterJdbcTemplate(),baseTemplate.getDbTypeEnum());
+        this.baseTemplate =baseTemplate;
     }
     
     /**
@@ -99,7 +99,7 @@ public class RecordTemplate extends BaseTemplate {
 
     public int insert(String tableName, Record record) {
         if (record == null || record.getData() == null) {
-            throw new NullDataException("要插入的数据为空!");
+            throw new NullDataException();
         }
         return getNamedParameterJdbcTemplate().update(createInsertSql(tableName, record, true), record.getData());
     }
@@ -115,6 +115,20 @@ public class RecordTemplate extends BaseTemplate {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         getNamedParameterJdbcTemplate().update(createInsertSql(tableName, record, true), new MapSqlParameterSource(record.getData()), keyHolder);
         return keyHolder.getKey().longValue();
+    }
+
+    /**
+     * 插入记录
+     *
+     * @param tableName
+     * @param record
+     * @return
+     */
+    public int insertSelective(String tableName, Record record) {
+        if (record == null || record.getData() == null) {
+            throw new NullDataException();
+        }
+        return getNamedParameterJdbcTemplate().update(createInsertSql(tableName, record, false), record.getData());
     }
 
     /**

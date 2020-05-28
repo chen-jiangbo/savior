@@ -1,11 +1,11 @@
 package com.jiangbo.savior.template;
 
+import com.jiangbo.savior.builder.SqlBuilder;
+import com.jiangbo.savior.callback.IContextCallBack;
 import com.jiangbo.savior.model.BaseTable;
 import com.jiangbo.savior.model.Context;
 import com.jiangbo.savior.model.Page;
 import com.jiangbo.savior.model.Record;
-import com.jiangbo.savior.builder.SqlBuilder;
-import com.jiangbo.savior.callback.IContextCallBack;
 import com.jiangbo.savior.utils.StringUtils;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 
@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public class TableTemplate extends BaseTemplate {
+public class TableTemplate extends Template {
 
     private RecordTemplate recordTemplate;
 
@@ -264,7 +264,7 @@ public class TableTemplate extends BaseTemplate {
      */
     public <T extends BaseTable> int insert(String tableName, T tableModle) {
         assertNull(tableModle);
-        return this.recordTemplate.insert(tableName, tableModle.reversal());
+        return this.recordTemplate.insertSelective(tableName, tableModle.reversal());
     }
 
     /**
@@ -323,12 +323,30 @@ public class TableTemplate extends BaseTemplate {
         assertNull(tableModle);
         Record record = tableModle.reversal();
         if (ignoreCloumns != null && ignoreCloumns.length > 0) {
-            Stream.of(ignoreCloumns).filter((o) -> StringUtils.isNotBlank(o)).forEach((o) -> {
-                record.remove(o);
-            });
+            Stream.of(ignoreCloumns).filter((o) -> StringUtils.isNotBlank(o)).forEach((o)->record.remove(o));
         }
         return this.recordTemplate.update(tableName, record, primaryKey);
     }
+
+    /**
+     * 通过表名更新指定数据
+     * @param tableName  表名
+     * @param tableModle 记录
+     * @param primaryKey 主键名
+     * @param cloumns 要求更新的列名
+     * @return
+     */
+    public <T extends BaseTable> int updateSpecify(String tableName, T tableModle, String primaryKey, String[] cloumns) {
+        assertNull(tableModle);
+        assertNull(cloumns);
+        Record record = tableModle.reversal();
+        Record result = new Record();
+        result.setColumn(primaryKey, record.get(primaryKey));
+        Stream.of(cloumns).filter((o) -> StringUtils.isNotBlank(o)).forEach((o) -> result.setColumn(o, record.get(o)));
+        return this.recordTemplate.update(tableName, result, primaryKey);
+    }
+
+
 
     /**
      * 保存数据(如果主键存在就更新,不存在就插入)
@@ -400,6 +418,31 @@ public class TableTemplate extends BaseTemplate {
                 });
             }
             temp.add(r);
+        }
+        return this.recordTemplate.batchUpdate(tableName, temp, primaryKey);
+    }
+
+    /**
+     * 通过表名批量更新指定字段
+     * @param tableName
+     * @param tableModles
+     * @param primaryKey
+     * @param cloumns
+     * @return
+     */
+    public <T extends BaseTable> int[] batchUpdateSpecify(String tableName, List<T> tableModles, String primaryKey, String[] cloumns) {
+        assertNull(tableModles);
+        assertNull(cloumns);
+        List<Record> temp = new ArrayList<>(tableModles.size());
+        for (T t : tableModles) {
+            Record r = t.reversal();
+            Record tr = new Record();
+            //确保主键一定是有值的
+            tr.setColumn(primaryKey,r.get(primaryKey));
+            for (String c : cloumns) {
+                tr.setColumn(c, r.get(c));
+            }
+            temp.add(tr);
         }
         return this.recordTemplate.batchUpdate(tableName, temp, primaryKey);
     }

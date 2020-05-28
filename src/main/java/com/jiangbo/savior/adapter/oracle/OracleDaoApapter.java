@@ -22,6 +22,11 @@ public class OracleDaoApapter implements DaoAdapter {
     }
 
     @Override
+    public String addLimit(StringBuffer sf, int offset, int size) {
+        return "SELECT * FROM  (SELECT T.* FROM ( " + sf.toString() + " ) T   WHERE ROWNUM <= " + (offset + size) + " )WHERE ROWNUM >= " + offset;
+    }
+
+    @Override
     public String concat(String... params) {
         return String.join("||",params);
     }

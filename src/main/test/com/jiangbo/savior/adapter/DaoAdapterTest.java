@@ -15,7 +15,7 @@ public class DaoAdapterTest extends BaseSaviorTest {
      */
     @Test
     public void testFunDaoAdapter(){
-        System.out.println(dao.langTemplate.query(String.class,"select "+dao.adapter.concat("name","id") +"from tb_savior where id=1"));
+        System.out.println(dao.baseTemplate.query(String.class,"select "+dao.adapter.concat("name","id") +"from tb_savior where id=1"));
     }
 
     /**

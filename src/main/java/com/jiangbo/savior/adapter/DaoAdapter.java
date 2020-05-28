@@ -3,7 +3,7 @@ package com.jiangbo.savior.adapter;
 
 import com.jiangbo.savior.adapter.enums.DbTypeEnum;
 
-public interface DaoAdapter{
+public interface DaoAdapter {
 
     public DbTypeEnum getDbType();
 
@@ -18,6 +18,12 @@ public interface DaoAdapter{
      * @return
      */
     public String getPageSql(String sql, int pageBeg, int size);
+
+    /**
+     * 增加分页
+     * @return
+     */
+    public String addLimit(StringBuffer sf, int offset, int size);
 
     /**
      * 参数连接

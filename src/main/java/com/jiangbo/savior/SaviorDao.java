@@ -6,7 +6,7 @@ import com.jiangbo.savior.exception.ServiceException;
 import com.jiangbo.savior.template.RecordTemplate;
 import com.jiangbo.savior.callback.FCallBack;
 import com.jiangbo.savior.coder.Coder;
-import com.jiangbo.savior.template.LangTemplate;
+import com.jiangbo.savior.template.BaseTemplate;
 import com.jiangbo.savior.template.ModelTemplate;
 import com.jiangbo.savior.template.TableTemplate;
 import com.jiangbo.savior.callback.ICallBack;
@@ -30,8 +30,8 @@ public class SaviorDao {
         this.transactionTemplate = transactionTemplate;
         this.dbTypeEnum = dbTypeEnum;
         coder = new Coder(this.namedParameterJdbcTemplate.getJdbcTemplate(), this.dbTypeEnum);
-        langTemplate = new LangTemplate(this.namedParameterJdbcTemplate, this.dbTypeEnum);
-        recordTemplate = new RecordTemplate(langTemplate);
+        baseTemplate = new BaseTemplate(this.namedParameterJdbcTemplate, this.dbTypeEnum);
+        recordTemplate = new RecordTemplate(baseTemplate);
         modelTemplate = new ModelTemplate(recordTemplate);
         tableTemplate = new TableTemplate(recordTemplate);
         adapter = this.dbTypeEnum.getDaoAdapter();
@@ -52,7 +52,7 @@ public class SaviorDao {
     /**
      * 基础类型template
      */
-    public LangTemplate langTemplate;
+    public BaseTemplate baseTemplate;
     /**
      * Record类型template
      */

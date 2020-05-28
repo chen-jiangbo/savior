@@ -1,17 +1,17 @@
 package com.jiangbo.savior.template;
 
-import com.jiangbo.savior.model.Page;
-import com.jiangbo.savior.model.Record;
 import com.jiangbo.savior.builder.SqlBuilder;
 import com.jiangbo.savior.callback.IModelQueryCallback;
 import com.jiangbo.savior.callback.IModelUpdateCallBack;
+import com.jiangbo.savior.model.Page;
+import com.jiangbo.savior.model.Record;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class ModelTemplate extends BaseTemplate {
+public class ModelTemplate extends Template {
 
     private RecordTemplate recordTemplate;
 
@@ -101,7 +101,7 @@ public class ModelTemplate extends BaseTemplate {
         if (total == null || total == 0) {
             return new Page<T>(null, 0l, size, pageBeg);
         }
-        return new Page<T>(queryList(queryCallback, getDaoAdapter().getPageSql(sqlBuilder.getSql(getDaoAdapter()), pageBeg, size), sqlBuilder), total, size, pageBeg);
+        return new Page<T>(buildModelList(queryCallback, recordTemplate.queryList(getDaoAdapter().getPageSql(sqlBuilder.getSql(getDaoAdapter()), pageBeg, size), sqlBuilder)), total, size, pageBeg);
     }
 
     /**
@@ -131,7 +131,7 @@ public class ModelTemplate extends BaseTemplate {
      */
     public <T> int insert(String tableName, IModelUpdateCallBack<T> updateCallBack, T model) {
         assertNull(model);
-        return this.recordTemplate.insert(tableName, updateCallBack.buildRecord(model));
+        return this.recordTemplate.insertSelective(tableName, updateCallBack.buildRecord(model));
     }
 
     /**

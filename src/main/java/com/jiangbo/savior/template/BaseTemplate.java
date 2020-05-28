@@ -1,189 +1,147 @@
 package com.jiangbo.savior.template;
 
-import com.jiangbo.savior.adapter.DaoAdapter;
 import com.jiangbo.savior.adapter.enums.DbTypeEnum;
-import com.jiangbo.savior.model.Record;
-import com.jiangbo.savior.exception.InavlidLangTypeException;
-import com.jiangbo.savior.exception.NullDataException;
 import com.jiangbo.savior.builder.SqlBuilder;
-import com.jiangbo.savior.callback.IEmptyResult;
-import com.jiangbo.savior.utils.ObjectUtils;
-import com.jiangbo.savior.utils.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
-public abstract class BaseTemplate {
-    protected Logger logger = LoggerFactory.getLogger(getClass());
+public class BaseTemplate extends Template {
 
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    private DbTypeEnum dbTypeEnum;
-
-    protected DbTypeEnum getDbTypeEnum(){
-        return this.dbTypeEnum;
-    }
-
-    protected DaoAdapter getDaoAdapter(){
-        return dbTypeEnum.getDaoAdapter();
-    }
-
-    protected void init(NamedParameterJdbcTemplate namedParameterJdbcTemplate,DbTypeEnum dbTypeEnum){
-        this.namedParameterJdbcTemplate=namedParameterJdbcTemplate;
-        this.dbTypeEnum=dbTypeEnum;
-    }
-
-    protected NamedParameterJdbcTemplate getNamedParameterJdbcTemplate() {
-        return namedParameterJdbcTemplate;
-    }
-
-    protected <T> boolean isBaseDateType(Class<T> clazz) {
-        if (clazz.isAssignableFrom(Integer.class)
-                || clazz.isAssignableFrom(Float.class)
-                || clazz.isAssignableFrom(Double.class)
-                || clazz.isAssignableFrom(String.class)
-                || clazz.isAssignableFrom(Long.class)
-                || clazz.isAssignableFrom(BigDecimal.class)
-                || clazz.isAssignableFrom(Date.class)) {
-            return true;
-        }
-        return false;
-    }
-
-
-    protected <T> void assertBaseDateType(Class<T> clazz){
-        if (!isBaseDateType(clazz)) {
-            throw new InavlidLangTypeException();
-        }
-    }
-
-
-    protected void assertNull(Object object){
-        if(ObjectUtils.isEmpty(object)){
-            throw new NullDataException();
-        }
-    }
-
-    protected <T> T executeQuery(IEmptyResult<T> result) {
-        try {
-            return result.execute();
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
+    public BaseTemplate(NamedParameterJdbcTemplate namedParameterJdbcTemplate, DbTypeEnum dbTypeEnum){
+        super.init(namedParameterJdbcTemplate,dbTypeEnum);
     }
 
     /**
-     * 创建更新语句的SQL
-     *
-     * @param tableName    表名
-     * @param record       要插入的数据
-     * @param primaryKey   主键
-     * @param isUpdateNull 是否要更新属性为空的值
+     * 查询基础类型List
+     * @param sql
+     * @param params
+     * @param <T>
      * @return
      */
-    protected String createUpdateSql(String tableName, Record record, String primaryKey, boolean isUpdateNull) {
-        StringBuffer sf = new StringBuffer("update ").append(getDaoAdapter().getSeparator()).append(tableName).append(getDaoAdapter().getSeparator()).append(" set ");
-        for (String k : record.getData().keySet()) {
-            if (StringUtils.equals(k, primaryKey)) {
-                continue;
-            }
-            if (!isUpdateNull && record.get(k) == null) {
-                continue;
-            }
-            sf.append(getDaoAdapter().getSeparator()).append(k).append(getDaoAdapter().getSeparator()).append("=:").append(k).append(" ,");
-        }
-        String sql = sf.substring(0, sf.length() - 1);
-        sql = sql + " where " +getDaoAdapter().getSeparator()+primaryKey + getDaoAdapter().getSeparator()+"=:" + primaryKey;
-        return sql;
+    public <T> List<T> queryList(Class<T> clazz, String sql, Object... params) {
+        assertBaseDateType(clazz);
+        return executeQuery(()-> getNamedParameterJdbcTemplate().getJdbcTemplate().queryForList(sql, params, clazz));
     }
 
-
     /**
-     * 创建更新语句的SQL
-     *
-     * @param tableName    表名
-     * @param record       要插入的数据
-     * @param keys         主键
-     * @param isUpdateNull 是否要更新属性为空的值
+     * 查询基础类型List
+     * @param clazz
+     * @param sqlBuilder
+     * @param <T>
      * @return
      */
-    protected String createUpdateSql(String tableName, Record record, String[] keys, boolean isUpdateNull) {
-        Set<String> rs = new HashSet<String>(keys.length);
-        StringBuffer endWhereSql = new StringBuffer(" where 1=1 ");
-        for (String key : keys) {
-            endWhereSql.append(" and ").append(getDaoAdapter().getSeparator()).append(key).append(getDaoAdapter().getSeparator()).append("=:").append(key);
-            rs.add(key);
-        }
-        StringBuffer sf = new StringBuffer("update ").append(getDaoAdapter().getSeparator()).append(tableName).append(getDaoAdapter().getSeparator()).append(" set ");
-        for (String k : record.getData().keySet()) {
-            if (rs.contains(k)) {
-                continue;
-            }
-            if (!isUpdateNull && record.get(k) == null) {
-                continue;
-            }
-            sf.append(getDaoAdapter().getSeparator()).append(k).append(getDaoAdapter().getSeparator()).append("=:").append(k).append(" ,");
-        }
-        String sql = sf.substring(0, sf.length() - 1);
-        sql = sql + endWhereSql.toString();
-        return sql;
+    public <T> List<T> queryList(Class<T> clazz, SqlBuilder sqlBuilder) {
+        assertBaseDateType(clazz);
+        return executeQuery(()-> getNamedParameterJdbcTemplate().queryForList(sqlBuilder.getSql(getDaoAdapter()), sqlBuilder.getValues(), clazz));
     }
 
-
     /**
-     * 创建查询的SQL
-     *
-     * @param tableName
-     * @param record
-     * @param isInsertNull
+     * 查询基础类型
+     * @param sqlBuilder
+     * @param <T>
      * @return
      */
-    protected String createInsertSql(String tableName, Record record, boolean isInsertNull) {
-        StringBuffer sfPre = new StringBuffer("insert into ").append(getDaoAdapter().getSeparator()).append(tableName).append(getDaoAdapter().getSeparator()).append(" (");
-        StringBuffer sfVal = new StringBuffer(" ) values ( ");
-        for (String key : record.getData().keySet()) {
-            if (!isInsertNull && record.get(key) == null) {
-                continue;
-            }
-            sfPre.append(getDaoAdapter().getSeparator()).append(key).append(getDaoAdapter().getSeparator()).append(",");
-            sfVal.append(":").append(key).append(",");
-        }
-        return sfPre.substring(0, sfPre.length() - 1) + sfVal.substring(0, sfVal.length() - 1) + " ) ";
+    public <T> T query(Class<T> clazz, SqlBuilder sqlBuilder) {
+        assertBaseDateType(clazz);
+        return executeQuery(()->getNamedParameterJdbcTemplate().queryForObject(sqlBuilder.getSql(getDaoAdapter()), sqlBuilder.getValues(), (Class<T>) clazz));
     }
 
     /**
-     * 获取sql查询结果的总条数
+     * 查询基础类型
+     * @param sql
+     * @param params
+     * @param <T>
+     * @return
+     */
+    public <T> T query(Class<T> clazz, String sql, Object... params) {
+        assertBaseDateType(clazz);
+        return executeQuery(()->getNamedParameterJdbcTemplate().getJdbcTemplate().queryForObject(sql, params, clazz));
+    }
+
+
+    /**
+     * 批量更新
      * @param sql
      * @param params
      * @return
      */
-    protected Long getTotal(String sql, Object... params) {
-        StringBuffer sqb = new StringBuffer();
-        sql = sql.toLowerCase();
-        if (sql.lastIndexOf("order by") > 0) {
-            sql = sql.substring(0, sql.indexOf("order by"));
-        }
-        sqb.append("select count(1) from (" + sql + ") tmp");
-        return executeQuery(() ->getNamedParameterJdbcTemplate().getJdbcTemplate().queryForObject(sqb.toString(), params, Long.class));
+    public int[] batchUpdate(String sql, List<Object[]> params) {
+        return getNamedParameterJdbcTemplate().getJdbcTemplate().batchUpdate(sql, params);
     }
 
     /**
-     * 获取sql查询结果的总条数
+     * 通过SQL更新
+     *
+     * @param sql
+     * @param params
      * @return
      */
-    protected Long getTotal(SqlBuilder sqlBuilder) {
-        StringBuffer sqb = new StringBuffer();
-        String sql = sqlBuilder.getSql(getDaoAdapter()).toLowerCase();
-        if (sql.lastIndexOf("order by") > 0) {
-            sql = sql.substring(0, sql.indexOf("order by"));
+    public int update(String sql, Object... params) {
+        if (params == null || params.length < 1) {
+            return getNamedParameterJdbcTemplate().getJdbcTemplate().update(sql);
         }
-        sqb.append("select count(1) from (" + sql + ") tmp");
-        return executeQuery(() ->getNamedParameterJdbcTemplate().queryForObject(sqb.toString(), sqlBuilder.getValues(), Long.class));
+        return getNamedParameterJdbcTemplate().getJdbcTemplate().update(sql, params);
     }
 
+    /**
+     * 通过SQL删除数据
+     *
+     * @param sql
+     * @param params
+     * @return
+     */
+    public int delete(String sql, Object... params) {
+        if (params == null || params.length < 1) {
+            return getNamedParameterJdbcTemplate().getJdbcTemplate().update(sql);
+        }
+        return getNamedParameterJdbcTemplate().getJdbcTemplate().update(sql, params);
+    }
+
+    /**
+     * 通过表名删除数据
+     *
+     * @param tableName
+     * @param primaryKey
+     * @param val
+     * @return
+     */
+    public int deleteByPrimaryKey(String tableName, String primaryKey, Object val) {
+        StringBuffer sf = new StringBuffer("delete from ").append(getDaoAdapter().getSeparator()).append(tableName).append(getDaoAdapter().getSeparator()).append(" where ").append(getDaoAdapter().getSeparator()).append(primaryKey).append(getDaoAdapter().getSeparator()).append("=?");
+        return getNamedParameterJdbcTemplate().getJdbcTemplate().update(sf.toString(), val);
+    }
+
+    /**
+     * 执行SQL语句
+     *
+     * @param sql
+     */
+    public void execute(String sql) {
+        getNamedParameterJdbcTemplate().getJdbcTemplate().execute(sql);
+    }
+
+    /**
+     * 能完SQL插入
+     *
+     * @param sql
+     * @param params
+     * @return
+     */
+    public int insert(String sql, Object... params) {
+        if (params == null || params.length < 1) {
+            return getNamedParameterJdbcTemplate().getJdbcTemplate().update(sql);
+        }
+        return getNamedParameterJdbcTemplate().getJdbcTemplate().update(sql, params);
+    }
+
+    /**
+     * 通过SQL批量插入
+     *
+     * @param sql
+     * @param params
+     * @return
+     */
+    public int[] batchInsert(String sql, List<Object[]> params) {
+        return getNamedParameterJdbcTemplate().getJdbcTemplate().batchUpdate(sql, params);
+    }
 }

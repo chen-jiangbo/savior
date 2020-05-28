@@ -21,6 +21,11 @@ public class MysqlDaoApapter implements DaoAdapter {
     }
 
     @Override
+    public String addLimit(StringBuffer sf, int offset, int size) {
+        return sf.append(" limit " + offset + "," + size).toString();
+    }
+
+    @Override
     public String concat(String... params) {
         return " CONCAT("+String.join(",", params)+") ";
     }
