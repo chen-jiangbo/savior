@@ -9,7 +9,7 @@ import java.util.Date;
 /**
  * 基础类型数据操作测试类
  */
-public class LangTemplateTest extends BaseSaviorTest {
+public class BaseTemplateTest extends BaseSaviorTest {
 
     /**
      * 创建表

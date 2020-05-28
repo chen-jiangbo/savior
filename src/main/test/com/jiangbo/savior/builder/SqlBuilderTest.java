@@ -57,13 +57,13 @@ public class SqlBuilderTest extends BaseSaviorTest {
         //不等于
         sqlBuilder.and(Condition.uEq("id",5l));
         //小于
-        sqlBuilder.and(Condition.lt("id",5l));
+        sqlBuilder.and(Condition.lessThan("id",5l));
         //大于
-        sqlBuilder.and(Condition.gt("id",5l));
+        sqlBuilder.and(Condition.greatThan("id",5l));
         //包含
         sqlBuilder.and(Condition.in("id", Arrays.asList(5l,6l)));
         //不包含
-        sqlBuilder.and(Condition.uIn("id", Arrays.asList(5l,6l)));
+        sqlBuilder.and(Condition.notIn("id", Arrays.asList(5l,6l)));
         //模糊查询
         sqlBuilder.and(Condition.like("name","%张%"));
         //直接拼接条件值
