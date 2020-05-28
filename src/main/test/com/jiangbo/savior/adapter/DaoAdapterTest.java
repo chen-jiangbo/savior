@@ -1,7 +1,7 @@
 package com.jiangbo.savior.adapter;
 
 import com.jiangbo.savior.BaseSaviorTest;
-import com.jiangbo.savior.callback.ICompatibleFunction;
+import com.jiangbo.savior.callback.ICompatible;
 import com.jiangbo.savior.pojo.table.TbSaviorTable;
 import org.junit.Test;
 
@@ -23,7 +23,7 @@ public class DaoAdapterTest extends BaseSaviorTest {
      */
     @Test
     public void testDbTypeDaoAdapter(){
-        dao.compatible(new ICompatibleFunction<TbSaviorTable>() {
+        dao.compatible(new ICompatible<TbSaviorTable>() {
             //mysql会执行下面的方法
             @Override
             public TbSaviorTable executeMysql() {
