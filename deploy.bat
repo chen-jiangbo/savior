@@ -1,1 +1,1 @@
-mvn clean deploy -e -DskipTests=true -Dgpg.passphrase=jenkin
+mvn clean deploy -e -DskipTests=true -f D:\space\idea-space\savior\pom.xml -Dgpg.passphrase=jenkin
