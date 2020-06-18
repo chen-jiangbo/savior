@@ -4,7 +4,7 @@
     <groupId>com.github.chen-jiangbo</groupId>
     <artifactId>savior</artifactId>
     <packaging>jar</packaging>
-    <version>1.1.0</version>
+    <version>1.1.2</version>
     <name>savior</name>
     <url>https://github.com/chen-jiangbo/savior</url>
     <description>savior数据库查询构架</description>

@@ -12,6 +12,9 @@ public class TbSaviorTable extends BaseTable{
         setId(record.getLong("id"));
         setName(record.getString("name"));
         setCreateTime(record.getDate("create_time"));
+        if(context!=null) {
+            System.out.println(context.getString("queryType"));
+        }
     }
 
     @Override

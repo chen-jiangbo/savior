@@ -53,7 +53,7 @@ public class TableTemplateTest extends BaseSaviorTest {
      */
     @Test
     public void testQueryTable() {
-        TbSaviorTable query = dao.tableTemplate.query(TbSaviorTable::new, "select * from tb_savior where id = 5 limit 1");
+        TbSaviorTable query = dao.tableTemplate.query(TbSaviorTable::new,(context)->context.setColumn("queryType","testQuery"),"select * from tb_savior where id = 5 limit 1");
         System.out.println("name==>" + query.getName());
         System.out.println("id==>" + query.getId());
     }

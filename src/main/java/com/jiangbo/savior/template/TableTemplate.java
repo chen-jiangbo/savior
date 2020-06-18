@@ -1,7 +1,6 @@
 package com.jiangbo.savior.template;
 
 import com.jiangbo.savior.builder.SqlBuilder;
-import com.jiangbo.savior.callback.IAction;
 import com.jiangbo.savior.model.BaseTable;
 import com.jiangbo.savior.model.Context;
 import com.jiangbo.savior.model.Page;
@@ -12,6 +11,7 @@ import org.springframework.util.LinkedCaseInsensitiveMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -41,12 +41,12 @@ public class TableTemplate extends Template {
      * @param value
      * @return
      */
-    public <T extends BaseTable> T queryByPrimaryKey(final Supplier<T> supplier, IAction<Context> action, String tableName, String primaryKey, Object value) {
+    public <T extends BaseTable> T queryByPrimaryKey(final Supplier<T> supplier, Consumer<Context> consumer, String tableName, String primaryKey, Object value) {
         Record record = this.recordTemplate.queryByPrimaryKey(tableName, primaryKey, value);
         T t = supplier.get();
-        if (action != null) {
+        if (consumer != null) {
             Context context=new Context();
-            action.execute(context);
+            consumer.accept(context);
             t.initContext(context);
         }
         return record == null ? null : record.convertTable(t);
@@ -59,12 +59,12 @@ public class TableTemplate extends Template {
      * @param <T>
      * @return
      */
-    public <T extends BaseTable> T query(final Supplier<T> supplier, IAction<Context> action, String sql, Object... params) {
+    public <T extends BaseTable> T query(final Supplier<T> supplier, Consumer<Context> consumer, String sql, Object... params) {
         Record record = this.recordTemplate.query(sql, params);
         T t = supplier.get();
-        if (action != null) {
+        if (consumer != null) {
             Context context = new Context();
-            action.execute(context);
+            consumer.accept(context);
             t.initContext(context);
         }
         return record == null ? null : record.convertTable(t);
@@ -90,8 +90,8 @@ public class TableTemplate extends Template {
      * @param <T>
      * @return
      */
-    public <T extends BaseTable> List<T> queryList(final Supplier<T> supplier, IAction<Context> action, String sql, Object... params) {
-        return buildListTableModel(this.recordTemplate.queryList(sql, params), supplier, action);
+    public <T extends BaseTable> List<T> queryList(final Supplier<T> supplier, Consumer<Context> consumer, String sql, Object... params) {
+        return buildListTableModel(this.recordTemplate.queryList(sql, params), supplier, consumer);
     }
 
     /**
@@ -99,20 +99,19 @@ public class TableTemplate extends Template {
      *
      * @param records
      * @param supplier
-     * @param action
      * @param <T>
      * @return
      */
-    private <T extends BaseTable> List<T> buildListTableModel(List<Record> records, final Supplier<T> supplier, IAction<Context> action) {
+    private <T extends BaseTable> List<T> buildListTableModel(List<Record> records, final Supplier<T> supplier, Consumer<Context> consumer) {
         if (records == null || records.isEmpty()) {
             return null;
         }
         List<T> rs = new ArrayList<T>(records.size());
         for (Record r : records) {
             T t = supplier.get();
-            if (action != null) {
+            if (consumer != null) {
                 Context context = new Context();
-                action.execute(context);
+                consumer.accept(context);
                 t.initContext(context);
             }
             rs.add(r.convertTable(t));
@@ -127,8 +126,8 @@ public class TableTemplate extends Template {
      * @param <T>
      * @return
      */
-    private <T extends BaseTable> List<T> queryList(final Supplier<T> supplier, String sql, SqlBuilder sqlBuilder, IAction<Context> action) {
-        return buildListTableModel(this.recordTemplate.queryList(sql, sqlBuilder), supplier, action);
+    private <T extends BaseTable> List<T> queryList(final Supplier<T> supplier, String sql, SqlBuilder sqlBuilder, Consumer<Context> consumer) {
+        return buildListTableModel(this.recordTemplate.queryList(sql, sqlBuilder), supplier, consumer);
     }
 
 
@@ -153,12 +152,12 @@ public class TableTemplate extends Template {
      * @param <T>
      * @return
      */
-    public <T extends BaseTable> Page<T> queryPage(final Supplier<T> supplier, IAction<Context> action, String sql, int pageBeg, int size, Object... params) {
+    public <T extends BaseTable> Page<T> queryPage(final Supplier<T> supplier, Consumer<Context> consumer, String sql, int pageBeg, int size, Object... params) {
         Long total = getTotal(sql,params);
         if (total == null || total == 0) {
             return new Page<T>(null, 0l, size, pageBeg);
         }
-        return new Page<T>(queryList(supplier, action, getDaoAdapter().getPageSql(sql, pageBeg, size), params), total, size, pageBeg);
+        return new Page<T>(queryList(supplier, consumer, getDaoAdapter().getPageSql(sql, pageBeg, size), params), total, size, pageBeg);
     }
 
     /**
@@ -205,8 +204,8 @@ public class TableTemplate extends Template {
      * @param <T>
      * @return
      */
-    public <T extends BaseTable> List<T> queryList(final Supplier<T> supplier, SqlBuilder sqlBuilder, IAction<Context> action) {
-        return queryList(supplier, sqlBuilder.getSql(getDaoAdapter()), sqlBuilder, action);
+    public <T extends BaseTable> List<T> queryList(final Supplier<T> supplier, SqlBuilder sqlBuilder, Consumer<Context> consumer) {
+        return queryList(supplier, sqlBuilder.getSql(getDaoAdapter()), sqlBuilder, consumer);
     }
 
     /**
@@ -230,12 +229,12 @@ public class TableTemplate extends Template {
      * @param <T>
      * @return
      */
-    public <T extends BaseTable> Page<T> queryPage(final Supplier<T> supplier, SqlBuilder sqlBuilder, IAction<Context> action, int pageBeg, int size) {
+    public <T extends BaseTable> Page<T> queryPage(final Supplier<T> supplier, SqlBuilder sqlBuilder, Consumer<Context> consumer, int pageBeg, int size) {
         Long total = getTotal(sqlBuilder);
         if (total == null || total == 0) {
             return new Page<T>(null, 0l, size, pageBeg);
         }
-        return new Page<T>(queryList(supplier, getDaoAdapter().getPageSql(sqlBuilder.getSql(getDaoAdapter()), pageBeg, size), sqlBuilder, action), total, size, pageBeg);
+        return new Page<T>(queryList(supplier, getDaoAdapter().getPageSql(sqlBuilder.getSql(getDaoAdapter()), pageBeg, size), sqlBuilder, consumer), total, size, pageBeg);
     }
 
     /**
