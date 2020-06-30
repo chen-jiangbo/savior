@@ -116,8 +116,8 @@ public class WhereBuilder {
             } else {
                 for (Condition condition : logical.getConditionList()) {
                     if (condition.getOpertion().equals(Opt.appendSql)
-                            || logical.getCondition().getOpertion().equals(Opt.IsNull)
-                            || logical.getCondition().getOpertion().equals(Opt.IsNotNull)) {
+                            || condition.getOpertion().equals(Opt.IsNull)
+                            || condition.getOpertion().equals(Opt.IsNotNull)) {
                         continue;
                     }
                     obj.put(condition.getAttr(), condition.getValue());
